@@ -8,16 +8,12 @@ import java.util.logging.Logger;
 
 /**
  * HttpServer is a simple HTTP server framework that allows registering RESTful
- * GET and POST services,
- * as well as serving static files. It listens for incoming HTTP requests on a
- * specified port and delegates
- * request handling to the RequestHandler class.
+ * services using annotations to get resources easily
  * 
  * <p>
  * Features:
  * <ul>
- * <li>Serve static files from a configurable resource path using
- * {@link #staticFiles(String)}.</li>
+ * <li>Serve static files from a configurable resource path using</li>
  * <li>Start and stop the server with {@link #startServer()} and
  * {@link #stopServer()}.</li>
  * </ul>
@@ -34,7 +30,7 @@ public class HttpServer {
     private boolean running = true;
 
     // REST services
-    private static String RESOURCE_PATH = "src/main/java/edu/escuelaing/tdse/framework/";
+    private static String RESOURCE_PATH = "src/main/java/edu/escuelaing/tdse/framework/resources";
 
     public static void main(String[] args) throws IOException, URISyntaxException {
         HttpServer server = new HttpServer();
