@@ -5,7 +5,6 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.function.BiFunction;
 
 /**
  * Handles HTTP requests for a simple web server.
@@ -61,43 +60,22 @@ public class RequestHandler {
         URI requestFile = new URI(file);
         String fileRequest = requestFile.getPath();
         String query = requestFile.getQuery();
-
-        HttpRequest req = new HttpRequest(query);
-        HttpResponse res = new HttpResponse();
         String contentType = getContentType(fileRequest);
 
         if (fileRequest.startsWith("/app")) {
-            BiFunction<HttpRequest, HttpResponse, String> service = null;
             String code = "404";
             String outputLine = " ";
-            if (method.equals("GET")) {
-                service = HttpServer.servicesGet.get(fileRequest);
-                code = "200";
-            } else if (method.equals("POST")) {
-                service = HttpServer.servicesPost.get(fileRequest);
-                code = "201";
-            }
-
-            if (service != null) {
-                outputLine = service.apply(req, res);
-                outputLine = "{\"response\":\"" + outputLine + "\"}";
-            } else {
-                outputLine = "{\"response\":Method not supported}";
-                ;
-                code = "404";
-            }
-
             String responseHeader = requestHeader("text/json", outputLine.length(), code);
             out.println(responseHeader);
             out.flush();
             out.println(outputLine);
             out.flush();
         } else {
-            requestStaticHandler(ruta + file, contentType);
+            requestHandler(ruta + file, contentType);
         }
     }
 
-    public void requestStaticHandler(String file, String contentType) throws IOException {
+    public void requestHandler(String file, String contentType) throws IOException {
         if (fileExists(file)) {
             byte[] requestfile = readFileData(file);
             String requestHeader = requestHeader(contentType, requestfile.length, "200");

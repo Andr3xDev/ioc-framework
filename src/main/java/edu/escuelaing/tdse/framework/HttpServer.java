@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.function.BiFunction;
 import java.util.logging.Logger;
 
 /**
@@ -18,8 +16,6 @@ import java.util.logging.Logger;
  * <p>
  * Features:
  * <ul>
- * <li>Register GET and POST endpoints using {@link #get(String, BiFunction)}
- * and {@link #post(String, BiFunction)}.</li>
  * <li>Serve static files from a configurable resource path using
  * {@link #staticFiles(String)}.</li>
  * <li>Start and stop the server with {@link #startServer()} and
@@ -39,8 +35,6 @@ public class HttpServer {
 
     // REST services
     private static String RESOURCE_PATH = "src/main/java/edu/escuelaing/tdse/framework/";
-    public static HashMap<String, BiFunction<HttpRequest, HttpResponse, String>> servicesGet = new HashMap<>();
-    public static HashMap<String, BiFunction<HttpRequest, HttpResponse, String>> servicesPost = new HashMap<>();
 
     public static void main(String[] args) throws IOException, URISyntaxException {
         HttpServer server = new HttpServer();
@@ -69,26 +63,6 @@ public class HttpServer {
                 logger.severe("Error accepting connection: " + e.getMessage());
             }
         }
-    }
-
-    public static void get(String path, BiFunction<HttpRequest, HttpResponse, String> restService) {
-        servicesGet.put(path, restService);
-    }
-
-    public static void staticFiles(String path) {
-        RESOURCE_PATH = RESOURCE_PATH + path;
-    }
-
-    public static void post(String path, BiFunction<HttpRequest, HttpResponse, String> restService) {
-        servicesPost.put(path, restService);
-    }
-
-    public HashMap<String, BiFunction<HttpRequest, HttpResponse, String>> getServicesGet() {
-        return servicesGet;
-    }
-
-    public HashMap<String, BiFunction<HttpRequest, HttpResponse, String>> getServicesPost() {
-        return servicesPost;
     }
 
     public void stopServer() {
