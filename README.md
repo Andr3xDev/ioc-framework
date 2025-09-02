@@ -1,21 +1,26 @@
 <div align="center">
-<h1 align="center">Mini-Framework</h1>
+<h1 align="center">Framework-IOC</h1>
 <p align="center">
-A minimalist, custom-built framework for rapid web service development.
+A minimalist, custom-built framework for rapid and observable web service development.
 </p>
 </div>
 
 </br>
 
 ## About
-This project is a custom, lightweight full-stack framework designed for building modern web applications. It leverages a modular architecture to provide a cohesive environment for both RESTful API development and static asset serving.
 
-Key features include:
+This project is a custom, lightweight full-stack framework designed for building modern, high-performance web applications. It leverages a modular architecture to provide a cohesive environment for both RESTful API development and static asset serving, with a strong emphasis on **diagnostics and observability**.
 
-- Declarative API Routing: Define REST endpoints using a clean, declarative syntax, mapping HTTP verbs to business logic handlers.
-- Integrated Static File Server: Efficiently serve static assets such as HTML, CSS, JavaScript, and images with configurable root directories.
-- Request & Response Middleware: A pipeline-based system for intercepting and modifying requests and responses, enabling functionalities like authentication, logging, and data validation.
-- Dependency Injection: Manages service dependencies, promoting a decoupled and testable codebase.
+---
+
+## Key Features
+
+-   **Annotation-Based Routing (Spring-Style)**: Define REST endpoints with intuitive annotations directly on your controller classes, heavily inspired by **Spring Boot**. Use decorators like `@Controller` to designate routing classes and `@GetMapping`, `@PostMapping`, etc., to bind HTTP methods directly to your business logic handlers. This provides a clean, declarative, and familiar development experience.
+-   **Integrated Static File Server**: Efficiently serve static assets such as HTML, CSS, JavaScript, and images with configurable root directories.
+-   **Request & Response Middleware**: A pipeline-based system for intercepting requests and responses, enabling functionalities like authentication, logging, and data validation.
+-   **Dependency Injection**: Manages service dependencies, promoting a decoupled and testable codebase.
+-   **Integrated Observability with Custom Tagging**: Automatically instruments key operations and allows developers to add **custom tags** to metrics, logs, and traces. This enables granular filtering and analysis of application performance based on business-specific contexts (e.g., `tenant_id`, `user_tier`).
+-   **Component & Request Tracing**: Incorporates built-in **element trackers** that provide end-to-end visibility into the request lifecycle. It allows tracing a request's path through different services and components, identifying performance bottlenecks and error sources with precision.
 
 Built with a focus on simplicity and performance, this framework aims to streamline the development of robust, maintainable, and scalable web services. It's an ideal foundation for rapid prototyping and production-ready microservices.
 
@@ -38,8 +43,8 @@ To run this server correctly, you need the following applications installed:
 - Clone the repository and navigate into the project directory where the pom.xml is located:
 
 ```sh
-git clone https://github.com/Andr3xDev/mini-framework
-cd  mini-framework
+git clone https://github.com/Andr3xDev/ioc-framework
+cd ioc-framework
 ```
 
 - Build the project & run it:
@@ -77,13 +82,21 @@ Manual acceptance tests were performed by requesting different resources to conf
 
 ![rest](docs/rest.png)
 
-- script.js
-
-![js](docs/js.png)
-
 - styles.css
 
 ![css](docs/css.png)
+
+- API test 1
+
+![api1](docs/q1.png)
+
+- API test 2
+
+![api2](docs/q2.png)
+
+- API test 3
+
+![api3](docs/q3.png)
 
 - image1.png
 
