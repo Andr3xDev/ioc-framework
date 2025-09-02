@@ -24,6 +24,14 @@ This project is a custom, lightweight full-stack framework designed for building
 
 Built with a focus on simplicity and performance, this framework aims to streamline the development of robust, maintainable, and scalable web services. It's an ideal foundation for rapid prototyping and production-ready microservices.
 
+### Core Components
+
+-   **HttpServer**: The application's entry point. It initializes the server, listens for incoming connections, and passes them off to the `HttpRequestHandler` for processing.
+-   **HttpRequestHandler**: The main dispatcher or "Front Controller." It inspects each request to differentiate between static file requests and dynamic API endpoints, routing the latter to the Framework Core.
+-   **Framework Core**: The framework's routing engine. On startup, it scans all `@RestController` classes to build a route map, and at runtime, it invokes the correct controller method for an incoming request.
+-   **Annotations**: The declarative API for developers. Provides a set of Spring Boot-inspired annotations (`@RestController`, `@GetMapping`, etc.) for defining routes and binding request parameters without boilerplate code.
+-   **Controllers**: The application-specific business logic layer. These are the user-defined classes that implement the API endpoints, such as `GreetingController` and `PañetteController`.
+
 </br>
 </br>
 
