@@ -19,6 +19,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+
 import edu.escuelaing.tdse.framework.annotations.RequestParam;
 import edu.escuelaing.tdse.framework.config.FrameworkSettings;
 import lombok.RequiredArgsConstructor;
@@ -224,6 +225,7 @@ public class RequestHandler {
 
     public String requestHeader(String contentType, int contentLength, String code) {
         String outHeader = "HTTP/1.1 " + code + " OK\r\n"
+                + "Access-Control-Allow-Origin: *\r\n"
                 + "Content-Type: " + contentType + "\r\n"
                 + "Content-Length: " + contentLength + "\r\n";
         return outHeader;

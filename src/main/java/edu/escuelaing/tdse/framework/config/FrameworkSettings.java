@@ -12,11 +12,33 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Logger;
-
 import edu.escuelaing.tdse.framework.annotations.GetMapping;
 import edu.escuelaing.tdse.framework.annotations.PostMapping;
 import edu.escuelaing.tdse.framework.annotations.RestController;
 
+/**
+ * FrameworkSettings is responsible for scanning and loading controller
+ * components
+ * annotated with
+ * {@link edu.escuelaing.tdse.framework.annotations.RestController}
+ * from the specified package. It maps HTTP GET and POST endpoints to their
+ * corresponding
+ * controller methods using
+ * {@link edu.escuelaing.tdse.framework.annotations.GetMapping}
+ * and {@link edu.escuelaing.tdse.framework.annotations.PostMapping}
+ * annotations.
+ * <p>
+ * The class maintains two static maps:
+ * <ul>
+ * <li>{@code servicesGet}: Maps GET endpoint paths to their handling
+ * methods.</li>
+ * <li>{@code servicesPost}: Maps POST endpoint paths to their handling
+ * methods.</li>
+ * </ul>
+ * <p>
+ * The {@link #loadComponents()} method scans the target package for classes,
+ * loads those annotated as controllers, and registers their annotated methods.
+ */
 public class FrameworkSettings {
 
     private static final Logger logger = Logger.getLogger(FrameworkSettings.class.getName());
@@ -29,7 +51,6 @@ public class FrameworkSettings {
         List<Class<?>> classes = new ArrayList<>();
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
-        // Convierte el nombre del paquete (puntos) a una ruta (slashes)
         String path = packagePath.replace('.', '/');
         Enumeration<URL> resources = classLoader.getResources(path);
 
@@ -37,7 +58,6 @@ public class FrameworkSettings {
             URL resource = resources.nextElement();
             String protocol = resource.getProtocol();
 
-            // CASO 1: Las clases están dentro de un archivo JAR
             if ("jar".equals(protocol)) {
                 String jarPath = resource.getPath().substring(5, resource.getPath().indexOf("!"));
                 try (JarFile jar = new JarFile(jarPath)) {
@@ -46,16 +66,12 @@ public class FrameworkSettings {
                         JarEntry entry = entries.nextElement();
                         String name = entry.getName();
                         if (name.startsWith(path) && name.endsWith(".class") && !entry.isDirectory()) {
-                            // Convierte la ruta del archivo a un nombre de clase completamente calificado
                             String className = name.substring(0, name.length() - 6).replace('/', '.');
                             classes.add(Class.forName(className));
                         }
                     }
                 }
-            }
-            // CASO 2: Las clases son archivos sueltos en el sistema de archivos (ejecución
-            // desde IDE)
-            else if ("file".equals(protocol)) {
+            } else if ("file".equals(protocol)) {
                 File[] files = new File(resource.toURI()).listFiles();
                 if (files != null) {
                     for (File file : files) {
@@ -69,17 +85,11 @@ public class FrameworkSettings {
             }
         }
 
-        // Una vez encontradas todas las clases, las procesamos para buscar anotaciones
         for (Class<?> clazz : classes) {
             processClass(clazz);
         }
     }
 
-    /**
-     * Procesa una clase para encontrar métodos anotados y los registra.
-     * 
-     * @param controllerClass La clase a procesar.
-     */
     private static void processClass(Class<?> controllerClass) {
         if (!controllerClass.isAnnotationPresent(RestController.class)) {
             return;
