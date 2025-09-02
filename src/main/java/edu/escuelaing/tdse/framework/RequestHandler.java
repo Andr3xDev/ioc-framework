@@ -1,10 +1,27 @@
 package edu.escuelaing.tdse.framework;
 
-import java.net.*;
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.net.Socket;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import edu.escuelaing.tdse.framework.annotations.RequestParam;
+import edu.escuelaing.tdse.framework.config.FrameworkSettings;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Handles HTTP requests for a simple web server.
@@ -15,21 +32,19 @@ import java.nio.file.Paths;
  * response.
  * </p>
  */
+@RequiredArgsConstructor
 public class RequestHandler {
 
+    // injected dependencies
     private final Socket clientSocket;
-    private String ruta;
+    private final String ruta;
+
+    // Other atributes
     PrintWriter out;
     BufferedReader in;
     BufferedOutputStream bodyOut;
 
-    public RequestHandler(Socket clientSocket, String ruta) {
-        this.clientSocket = clientSocket;
-        this.ruta = ruta;
-    }
-
     public void handlerRequest() throws IOException, URISyntaxException {
-
         out = new PrintWriter(clientSocket.getOutputStream(), true);
         in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
         bodyOut = new BufferedOutputStream(clientSocket.getOutputStream());
@@ -48,34 +63,106 @@ public class RequestHandler {
                 break;
             }
         }
+        System.out.println("Received request: " + method + " " + file);
         rediretMethod(method, file);
         out.close();
         bodyOut.close();
         in.close();
         clientSocket.close();
-
     }
 
     public void rediretMethod(String method, String file) throws IOException, URISyntaxException {
         URI requestFile = new URI(file);
         String fileRequest = requestFile.getPath();
-        String query = requestFile.getQuery();
+        String queryRequest = Optional.ofNullable(requestFile.getQuery()).orElse("");
         String contentType = getContentType(fileRequest);
-
-        if (fileRequest.startsWith("/app")) {
-            String code = "404";
-            String outputLine = " ";
-            String responseHeader = requestHeader("text/json", outputLine.length(), code);
-            out.println(responseHeader);
-            out.flush();
-            out.println(outputLine);
-            out.flush();
+        if (fileRequest.startsWith("/api")) {
+            handlerRequestApp(method, fileRequest, queryRequest);
         } else {
-            requestHandler(ruta + file, contentType);
+            requestStaticHandler(ruta + file, contentType);
         }
     }
 
-    public void requestHandler(String file, String contentType) throws IOException {
+    public void handlerRequestApp(String method, String fileRequest, String queryRequest) {
+        String endpoint = fileRequest.substring(4);
+        Method service = null;
+        String code = "404";
+        String outputLine = " ";
+        if (method.equals("GET")) {
+            service = FrameworkSettings.getGetService(endpoint);
+            code = "200";
+        } else if (method.equals("POST")) {
+            service = FrameworkSettings.getPostService(endpoint);
+            code = "201";
+        }
+        if (service != null) {
+            outputLine = invokeHandler(service, queryRequest);
+            outputLine = "{\"response\":\"" + outputLine + "\"}";
+        } else {
+            outputLine = "{\"response\":Method not supported}";
+        }
+        String responseHeader = requestHeader("text/json", outputLine.length(), code);
+        out.println(responseHeader);
+        out.println(outputLine);
+        out.flush();
+    }
+
+    public String invokeHandler(Method service, String query) {
+        String response = "";
+        try {
+            Map<String, String> queryParams = queryParams(query);
+            Object[] parameters = new Object[service.getParameterCount()];
+            Class<?>[] parameterTypes = service.getParameterTypes();
+            Annotation[][] annotations = service.getParameterAnnotations();
+            for (int i = 0; i < annotations.length; i++) {
+                for (Annotation annotation : annotations[i]) {
+                    if (annotation instanceof RequestParam) {
+                        RequestParam requestParam = (RequestParam) annotation;
+                        String paramName = requestParam.value();
+                        String paramValue = queryParams.get(paramName);
+                        if (paramValue == null || paramValue.isEmpty()) {
+                            paramValue = requestParam.defaultValue();
+                        }
+                        if (paramValue != null) {
+                            if (parameterTypes[i] == int.class) {
+                                parameters[i] = Integer.parseInt(paramValue);
+                            } else if (parameterTypes[i] == double.class) {
+                                parameters[i] = Double.parseDouble(paramValue);
+                            } else {
+                                parameters[i] = paramValue;
+                            }
+                        } else {
+                            parameters[i] = null;
+                        }
+                    }
+                }
+            }
+            Object instance = service.getDeclaringClass().getDeclaredConstructor().newInstance();
+            response = (String) service.invoke(instance, parameters);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error executing service method: " + e.getMessage());
+        }
+        return response;
+    }
+
+    public Map<String, String> queryParams(String query) {
+        Map<String, String> queryParams = new HashMap<>();
+        if (query == null || query.isEmpty()) {
+            return queryParams;
+        }
+        String[] values = query.split("&");
+        for (String s : values) {
+            String[] valueM = s.split("=", 2);
+            String key = valueM[0].trim();
+            String value = valueM.length > 1 ? valueM[1].trim() : "";
+            queryParams.put(key, value);
+        }
+        return queryParams;
+    }
+
+    public void requestStaticHandler(String file, String contentType) throws IOException {
         if (fileExists(file)) {
             byte[] requestfile = readFileData(file);
             String requestHeader = requestHeader(contentType, requestfile.length, "200");

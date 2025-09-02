@@ -6,6 +6,8 @@ import java.net.Socket;
 import java.net.URISyntaxException;
 import java.util.logging.Logger;
 
+import edu.escuelaing.tdse.framework.config.FrameworkSettings;
+
 /**
  * HttpServer is a simple HTTP server framework that allows registering RESTful
  * services using annotations to get resources easily
@@ -30,7 +32,7 @@ public class HttpServer {
     private boolean running = true;
 
     // REST services
-    private static String RESOURCE_PATH = "src/main/java/edu/escuelaing/tdse/framework/resources";
+    private static String RESOURCE_PATH = "src/main/java/edu/escuelaing/tdse/framework/public";
 
     public static void main(String[] args) throws IOException, URISyntaxException {
         HttpServer server = new HttpServer();
@@ -48,10 +50,11 @@ public class HttpServer {
         while (running) {
             try {
                 logger.info("Server started on port: " + PORT);
+                FrameworkSettings.loadComponents();
                 Socket clientSocket = serverSocket.accept();
                 RequestHandler requestHandler = new RequestHandler(clientSocket, RESOURCE_PATH);
                 requestHandler.handlerRequest();
-            } catch (IOException e) {
+            } catch (IOException | ClassNotFoundException e) {
                 if (!running) {
                     logger.info("Server stopped.");
                     break;
