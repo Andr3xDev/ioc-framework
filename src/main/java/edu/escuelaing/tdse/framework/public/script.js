@@ -1,6 +1,6 @@
 function getGreeting() {
     let nameVar = document.getElementById("textInputGet").value;
-    let url = "/api/greeting?name=" + nameVar;
+    let url = "/api/greeting?name=" + encodeURIComponent(nameVar);
 
     fetch(url, { method: 'GET' })
         .then(response => response.json())
@@ -17,35 +17,33 @@ function getHello() {
         .then(data => {
             document.getElementById("getHello").innerHTML = data.response;
         })
-        .catch(error => {
-            console.error('Error in getHello:', error);
-            document.getElementById("getHello").innerHTML = "Error fetching data. Check console.";
-        });
 }
 
 function getColors() {
     let url = "/api/colors";
 
     fetch(url, { method: 'GET' })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) throw new Error("Network response was not ok");
+            return response.json();
+        })
         .then(data => {
-            document.getElementById("getColors").innerHTML = JSON.stringify(data);
+            const colorsArray = JSON.parse(data.response);
+            document.getElementById("getColors").innerHTML = "Current Palette:<br>" + colorsArray.join('<br>');
         })
 }
 
 function postColor() {
     let colorValue = document.getElementById("textInputPost").value;
-    let url = "/api/colors";
+    let url = "/api/colors?color=" + encodeURIComponent(colorValue);
 
-    fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ color: colorValue })
-    })
-    .then(response => response.json())
-    .then(data => {
-        document.getElementById("postColor").innerHTML = JSON.stringify(data);
-    })
+    fetch(url, { method: 'POST' })
+        .then(response => {
+            if (!response.ok) throw new Error("Network response was not ok");
+            return response.json();
+        })
+        .then(data => {
+            const colorsArray = JSON.parse(data.response);
+            document.getElementById("postColor").innerHTML = "Updated Palette:<br>" + colorsArray.join('<br>');
+        })
 }

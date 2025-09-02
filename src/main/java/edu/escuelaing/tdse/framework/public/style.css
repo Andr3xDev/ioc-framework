@@ -53,10 +53,10 @@ button:hover {
     background-color: #89b482;
 }
 
-#static1,
-#static2,
-#getResult,
-#postResult {
+#getHello,
+#getGreeting,
+#getColors,
+#postColor {
     margin-top: 20px;
     font-weight: bold;
     color: #e78a4e;
